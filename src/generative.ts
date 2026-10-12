@@ -84,8 +84,8 @@ export function generate(seed: number, w: number, h: number): GenItem[] {
 
   // pale background wash, wet-in-wet
   if (rnd() < 0.7) {
-    shape(colors[0], w * (0.4 + rnd() * 0.2), h * (0.4 + rnd() * 0.2), m * 0.55, 18, 0.06, 0.006);
-    shape(colors[1 + Math.floor(rnd() * (colors.length - 1))], w * rnd(), h * rnd(), m * 0.35, 14, 0.05, 0.008);
+    shape(colors[0], w * (0.4 + rnd() * 0.2), h * (0.4 + rnd() * 0.2), m * 0.5, 18, 0.05, 0.0025);
+    shape(colors[1 + Math.floor(rnd() * (colors.length - 1))], w * rnd(), h * rnd(), m * 0.3, 14, 0.04, 0.003);
     offset += 800;
   }
 
@@ -94,9 +94,9 @@ export function generate(seed: number, w: number, h: number): GenItem[] {
     const shapes = 2 + Math.floor(rnd() * 2);
     for (let s = 0; s < shapes; s++) {
       const color = colors[Math.floor(rnd() * colors.length)];
-      const r = m * (0.1 + rnd() * 0.2) * (b === batches - 1 ? 0.7 : 1);
-      shape(color, w * (0.15 + rnd() * 0.7), h * (0.15 + rnd() * 0.7), r, 26 + Math.floor(rnd() * 14),
-        0.03 + rnd() * 0.015, (0.016 + rnd() * 0.02) * (b + 1 === batches ? 1.3 : 1));
+      const r = m * (0.08 + rnd() * 0.14) * (b === batches - 1 ? 0.7 : 1);
+      shape(color, w * (0.2 + rnd() * 0.6), h * (0.2 + rnd() * 0.6), r, 26 + Math.floor(rnd() * 14),
+        0.022 + rnd() * 0.012, (0.005 + rnd() * 0.006) * (b + 1 === batches ? 1.4 : 1));
     }
     offset += 850;
   }

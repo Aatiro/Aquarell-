@@ -97,7 +97,7 @@ html, body {
   background: transparent;
   color: var(--ink);
   border-radius: 12px;
-  width: 44px;
+  width: min(44px, 10.4vw);
   height: 44px;
   display: grid;
   place-items: center;
@@ -245,7 +245,7 @@ svg .hole { fill: var(--bar); }
 
 .slider {
   display: grid;
-  grid-template-columns: 92px 1fr 40px;
+  grid-template-columns: 116px 1fr 40px;
   align-items: center;
   gap: 10px;
   min-height: 40px;
@@ -393,7 +393,9 @@ input[type="range"]::-moz-range-thumb {
   #sheet-more { top: auto; bottom: 12px; }
 }
 
-@media (max-width: 380px) {
-  #toolbar button { width: 38px; }
-  .slider { grid-template-columns: 76px 1fr 34px; }
+@media (max-width: 400px) {
+  #toolbar { padding-left: 4px; padding-right: 4px; gap: 0; }
+  #toolbar .group { gap: 0; }
+  .slider { grid-template-columns: 108px 1fr 36px; gap: 6px; }
+  .seg button { padding: 6px 8px; }
 }

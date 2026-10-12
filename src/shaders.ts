@@ -220,7 +220,7 @@ void main() {
       in1 += fin * texelFetch(uP1, n, 0);
     }
     dDamp += uCapillary * (0.3 + face.g) * (Wn.g - W.g);
-    if (open) dSalt += 0.04 * (Wn.b - W.b);
+    if (open) dSalt += 0.1 * (Wn.b - W.b);
   }
 
   vec4 nP0, nP1;
@@ -317,7 +317,7 @@ void main() {
   float s = clamp(BW.g, 0.0, 1.0);
   nD0 *= 1.0 - 0.7 * s;
   nD1 *= 1.0 - 0.7 * s;
-  Dry.rgb = mix(Dry.rgb, vec3(1.0), 0.06 * s * (0.5 + h));
+  Dry.rgb = mix(Dry.rgb, vec3(1.0), 0.1 * s * (0.5 + h));
 
   oD0 = max(nD0, 0.0);
   oD1 = max(nD1, 0.0);
@@ -432,7 +432,7 @@ void main() {
     vec2 dir = vec2(cos(vI0.w), sin(vI0.w));
     float across = dot(vLocal, vec2(-dir.y, dir.x));
     float streak = vnoise(vec2(across * 6.0 + seed * 3.1, seed * 7.0));
-    mask *= mix(0.85 + 0.3 * streak, 0.3 + 1.0 * streak, dryness);
+    mask *= mix(0.96 + 0.08 * streak, 0.3 + 1.0 * streak, dryness);
     float m = pig * fall * mask;
     oBW = vec4(water * fall, 0.0, 0.0, 0.0);
     oBP0 = vec4(uC * m, m);

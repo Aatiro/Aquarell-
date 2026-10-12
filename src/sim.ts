@@ -185,7 +185,7 @@ export class Watercolor {
       .tex('uW', W).tex('uP0', P0).tex('uP1', P1).tex('uD0', D0).tex('uD1', D1)
       .tex('uBW', BW).tex('uBP0', BP0).tex('uBP1', BP1).tex('uPaper', paper)
       .f('uDiff', 0.2).f('uEdge', p.edge).f('uEvap', 0.00055 * speed).f('uDampEvap', 0.0028 * speed)
-      .f('uAbsorb', 0.01).f('uWMax', 1.2).f('uSalt', 0.25).f('uCreep', 0.35).f('uCapillary', 0.01)
+      .f('uAbsorb', 0.01).f('uWMax', 1.2).f('uSalt', 0.7).f('uCreep', 0.35).f('uCapillary', 0.01)
       .f('uDampThr', 0.12).f('uDepBase', 0.006).f('uDepMax', 0.1).f('uLift', 0.004).f('uGranSim', p.granulation);
     this.draw();
 
@@ -251,7 +251,7 @@ export class Watercolor {
     // pass 2: fill where the bit is set
     gl.colorMask(true, true, true, true);
     gl.stencilFunc(gl.EQUAL, 1, 1);
-    gl.stencilOp(gl.KEEP, gl.KEEP, gl.KEEP);
+    gl.stencilOp(gl.KEEP, gl.KEEP, gl.ZERO); // zero on write: overlapping fan triangles fill once
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.ONE, gl.ONE);
     this.pPoly.f('uWater', water).f('uPig', pigment).f('uSeed', seed)

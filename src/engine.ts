@@ -8,6 +8,7 @@ import { PaperType, Snapshot, Watercolor } from './sim';
 type Ev =
   | { step: number; a: number; k: 'begin'; s: StrokeSettings }
   | { step: number; a: number; k: 'pt'; x: number; y: number; p: number }
+  | { step: number; a: number; k: 'end' }
   | { step: number; a: number; k: 'poly'; pts: Float32Array; color: PigmentLatent; water: number; pig: number; seed: number }
   | { step: number; a: number; k: 'clear' }
   | { step: number; a: -1; k: 'param'; drySpeed: number; paper: PaperType };
@@ -110,6 +111,10 @@ export class Engine {
   }
 
   endStroke(): void {
+    const st = this.stroke;
+    if (!st) return;
+    st.b.finish(this.stamps);
+    this.log.push({ step: this.sim.stepIndex, a: st.a, k: 'end' });
     this.flushStroke();
     this.stroke = null;
   }
@@ -276,6 +281,9 @@ export class Engine {
         break;
       case 'pt':
         r.builder?.add(e.x, e.y, e.p, this.stamps);
+        break;
+      case 'end':
+        r.builder?.finish(this.stamps);
         break;
       case 'poly':
         this.sim.polygon(e.pts, e.color, e.water, e.pig, e.seed);

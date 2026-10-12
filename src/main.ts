@@ -341,6 +341,13 @@ window.addEventListener('keydown', (e) => {
 
 window.addEventListener('resize', () => { layoutCanvas(); engine.invalidate(); });
 
+canvas.addEventListener('webglcontextlost', (e) => {
+  e.preventDefault();
+  const box = $('#error');
+  box.hidden = false;
+  box.textContent = 'Die Grafikkarte hat den WebGL-Kontext verloren. Bitte Seite neu laden.';
+});
+
 // ------------------------------------------------------------------ main loop
 let slowFrames = 0;
 let last = performance.now();

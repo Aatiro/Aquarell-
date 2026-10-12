@@ -68,7 +68,7 @@ export class StrokeBuilder {
     if (!this.started) {
       this.started = true;
       this.lx = x; this.ly = y; this.lp = p;
-      this.emit(x, y, p, out, 1);
+      this.emit(x, y, p, out, this.spacing(p) / this.radius(p));
       return;
     }
     const dx = x - this.lx, dy = y - this.ly;
@@ -100,6 +100,11 @@ export class StrokeBuilder {
     this.lx = x; this.ly = y; this.lp = p;
   }
 
+  /** A tap without movement still leaves a full dab. */
+  finish(out: StampBuffer): void {
+    if (this.started && this.travelled === 0 && this.s.tool !== 3) this.emit(this.lx, this.ly, this.lp, out, 0.9);
+  }
+
   private spacing(p: number): number {
     const r = this.radius(p);
     return this.s.tool === 3 ? Math.max(1.5, r * 0.7) : Math.max(0.5, r * 0.18);
@@ -125,14 +130,14 @@ export class StrokeBuilder {
         break;
       }
       case 2:
-        out.push(x, y, r, this.angle, 0, 0.35 * density * (0.5 + 0.5 * p), s.seed % 1000);
+        out.push(x, y, r, this.angle, 0, 0.6 * density * (0.5 + 0.5 * p), s.seed % 1000);
         break;
       case 3: {
         const grains = 1 + Math.floor(r * r * 0.012 * (0.5 + s.pigment));
         for (let i = 0; i < grains; i++) {
           const a = this.rnd() * Math.PI * 2;
           const d = Math.sqrt(this.rnd()) * r;
-          const gr = (0.6 + this.rnd() * 1.6) * this.simScale + 0.4;
+          const gr = (1.0 + this.rnd() * 2.6) * this.simScale + 0.4;
           out.push(x + Math.cos(a) * d, y + Math.sin(a) * d, gr, 0, 0, 0.6 + 0.4 * this.rnd(), 0);
         }
         break;
