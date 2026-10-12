@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#efeae0" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <title>Aquarell</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='13' cy='14' r='9' fill='%233a6ea5' opacity='.7'/%3E%3Ccircle cx='20' cy='19' r='9' fill='%23d9822b' opacity='.6'/%3E%3C/svg%3E" />
+  </head>
+  <body>
+    <div id="app">
+      <main id="stage">
+        <div id="sheet-of-paper">
+          <canvas id="paper" aria-label="Malfläche"></canvas>
+        </div>
+        <div id="cursor" hidden></div>
+        <div id="status" hidden><span class="dot"></span><span class="label">trocknet…</span></div>
+        <div id="replay" hidden>
+          <span>Zeitraffer</span>
+          <div class="progress"><div class="bar"></div></div>
+          <button id="replay-stop" type="button">Stopp</button>
+        </div>
+        <div id="error" hidden></div>
+      </main>
+
+      <nav id="toolbar" aria-label="Werkzeuge">
+        <div class="group tools" role="radiogroup" aria-label="Werkzeug">
+          <button type="button" class="tool" data-tool="0" title="Pinsel (B)" aria-label="Pinsel">
+            <svg viewBox="0 0 24 24"><path d="M19.5 3.5c-1.6.6-6.4 5.2-8.5 7.9l1.6 1.6c2.7-2.1 7.3-6.9 7.9-8.5.2-.6-.4-1.2-1-1z"/><path d="M9.8 12.6c-1.9-.1-3.6 1.2-3.9 3.1-.3 1.6-1.1 2.6-2.4 3.1 3.4 1.4 7.4.7 8.3-2.6.3-1-.3-2.5-2-3.6z"/></svg>
+          </button>
+          <button type="button" class="tool" data-tool="1" title="Nasser Pinsel – nur Wasser (W)" aria-label="Nasser Pinsel">
+            <svg viewBox="0 0 24 24"><path d="M12 3.2c-2.6 3.6-6 7.4-6 11a6 6 0 0 0 12 0c0-3.6-3.4-7.4-6-11z"/><path d="M9.2 15.2a3 3 0 0 0 2.6 2.7" class="hl"/></svg>
+          </button>
+          <button type="button" class="tool" data-tool="2" title="Schwamm – Farbe aufnehmen (S)" aria-label="Schwamm">
+            <svg viewBox="0 0 24 24"><path d="M5 8.5c0-1.4 1.1-2.5 2.5-2.5h9c1.4 0 2.5 1.1 2.5 2.5v7c0 1.4-1.1 2.5-2.5 2.5h-9A2.5 2.5 0 0 1 5 15.5z"/><circle cx="9" cy="10" r=".9" class="hole"/><circle cx="14.5" cy="9.5" r="1.1" class="hole"/><circle cx="12" cy="14" r="1" class="hole"/><circle cx="16" cy="14.5" r=".7" class="hole"/><circle cx="8.3" cy="14.6" r=".6" class="hole"/></svg>
+          </button>
+          <button type="button" class="tool" data-tool="3" title="Salz (X)" aria-label="Salz">
+            <svg viewBox="0 0 24 24"><path d="M12 3.5l1.3 3.4L16.7 8l-3.4 1.2L12 12.6l-1.3-3.4L7.3 8l3.4-1.1z"/><path d="M6.5 13l.8 1.9 1.9.7-1.9.7-.8 2-.7-2-2-.7 2-.7zM17 13.5l1 2.3 2.3 1-2.3.9-1 2.3-.9-2.3-2.3-.9 2.3-1z"/></svg>
+          </button>
+        </div>
+
+        <div class="group">
+          <button type="button" id="btn-color" class="swatch-btn" title="Farbe & Mischfläche" aria-label="Farbe">
+            <span class="swatch"></span>
+          </button>
+          <button type="button" id="btn-brush" title="Pinsel-Einstellungen" aria-label="Pinsel-Einstellungen">
+            <svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10" class="line"/><circle cx="16" cy="7" r="2.2" class="ring"/><circle cx="8" cy="17" r="2.2" class="ring"/></svg>
+          </button>
+        </div>
+
+        <div class="group">
+          <button type="button" id="btn-undo" title="Rückgängig (Strg+Z)" aria-label="Rückgängig">
+            <svg viewBox="0 0 24 24"><path d="M9 7L4.5 11.5 9 16" class="line"/><path d="M5 11.5h9.5a5 5 0 0 1 0 10H11" class="line"/></svg>
+          </button>
+          <button type="button" id="btn-redo" title="Wiederholen (Strg+Umschalt+Z)" aria-label="Wiederholen">
+            <svg viewBox="0 0 24 24"><path d="M15 7l4.5 4.5L15 16" class="line"/><path d="M19 11.5H9.5a5 5 0 0 0 0 10H13" class="line"/></svg>
+          </button>
+          <button type="button" id="btn-more" title="Mehr" aria-label="Mehr">
+            <svg viewBox="0 0 24 24"><circle cx="5.5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="18.5" cy="12" r="1.7"/></svg>
+          </button>
+        </div>
+      </nav>
+
+      <section class="sheet" id="sheet-color" hidden aria-label="Farben">
+        <h2>Farbe</h2>
+        <div id="palette" class="palette"></div>
+        <div class="mixer-head">
+          <h2>Mischfläche</h2>
+          <div class="seg" id="mix-mode">
+            <button type="button" data-mode="paint" class="on">Auftragen</button>
+            <button type="button" data-mode="smudge">Mischen</button>
+            <button type="button" data-mode="pick">Aufnehmen</button>
+          </div>
+        </div>
+        <canvas id="mixer"></canvas>
+        <div class="row">
+          <span class="hint" id="mix-hint">Farbe wählen und auf die Fläche tupfen.</span>
+          <button type="button" class="text-btn" id="mix-clear">Leeren</button>
+        </div>
+      </section>
+
+      <section class="sheet" id="sheet-brush" hidden aria-label="Pinsel">
+        <label class="slider"><span>Grösse</span><input id="in-size" type="range" min="2" max="90" step="1" /><output></output></label>
+        <label class="slider"><span>Wasser</span><input id="in-water" type="range" min="0" max="100" step="1" /><output></output></label>
+        <label class="slider"><span>Pigment</span><input id="in-pigment" type="range" min="0" max="100" step="1" /><output></output></label>
+      </section>
+
+      <section class="sheet" id="sheet-more" hidden aria-label="Mehr">
+        <h2>Papier</h2>
+        <div class="seg" id="paper-type">
+          <button type="button" data-paper="0">Rau</button>
+          <button type="button" data-paper="1">Glatt</button>
+          <button type="button" data-paper="2">Bütten</button>
+        </div>
+        <label class="slider"><span>Trocknung</span><input id="in-dry" type="range" min="0" max="100" step="1" /><output></output></label>
+        <label class="slider"><span>Randabdunklung</span><input id="in-edge" type="range" min="0" max="100" step="1" /><output></output></label>
+        <label class="slider"><span>Granulation</span><input id="in-gran" type="range" min="0" max="100" step="1" /><output></output></label>
+        <div class="actions">
+          <button type="button" id="btn-gen" class="action">
+            <svg viewBox="0 0 24 24"><path d="M12 3l1.8 4.6L18.5 9l-4.7 1.5L12 15l-1.8-4.5L5.5 9l4.7-1.4z"/><path d="M18 14l.9 2.2 2.1.8-2.1.8L18 20l-.9-2.2-2.1-.8 2.1-.8z"/></svg>
+            Generativ
+          </button>
+          <button type="button" id="btn-replay" class="action">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" class="ring"/><path d="M10 8.5v7l5.5-3.5z"/></svg>
+            Zeitraffer
+          </button>
+          <button type="button" id="btn-export" class="action">
+            <svg viewBox="0 0 24 24"><path d="M12 4v11M7.5 10.5L12 15l4.5-4.5M5 19.5h14" class="line"/></svg>
+            PNG (2×)
+          </button>
+          <button type="button" id="btn-clear" class="action danger">
+            <svg viewBox="0 0 24 24"><path d="M5 7h14M9.5 7V5h5v2M7 7l1 12.5h8L17 7" class="line"/></svg>
+            Leeren
+          </button>
+        </div>
+      </section>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
