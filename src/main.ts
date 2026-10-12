@@ -318,8 +318,28 @@ $('#btn-export').addEventListener('click', async () => {
   engine.invalidate();
 });
 
+// ------------------------------------------------------------------ guide
+const guide = $('#guide');
+function openGuide() {
+  closeSheets();
+  guide.hidden = false;
+  $('.guide-card').scrollTop = 0;
+  $('#guide-close').focus({ preventScroll: true });
+}
+function closeGuide() {
+  guide.hidden = true;
+  try { localStorage.setItem('aquarell.guideSeen', '1'); } catch { /* ignore */ }
+}
+$('#btn-help').addEventListener('click', openGuide);
+$('#guide-close').addEventListener('click', closeGuide);
+guide.addEventListener('pointerdown', (e) => { if (e.target === guide) closeGuide(); });
+let guideSeen = false;
+try { guideSeen = localStorage.getItem('aquarell.guideSeen') === '1'; } catch { /* ignore */ }
+if (!guideSeen) openGuide();
+
 window.addEventListener('keydown', (e) => {
   if ((e.target as HTMLElement).tagName === 'INPUT') return;
+  if (!guide.hidden && e.key !== 'Escape') return;
   const mod = e.ctrlKey || e.metaKey;
   if (mod && e.key.toLowerCase() === 'z') {
     e.preventDefault();
@@ -335,7 +355,8 @@ window.addEventListener('keydown', (e) => {
     else if (k === 'x') setTool(3);
     else if (k === '[') setSize(Math.max(2, settings.size - 2));
     else if (k === ']') setSize(Math.min(90, settings.size + 2));
-    else if (k === 'escape') closeSheets();
+    else if (k === 'escape') { closeSheets(); closeGuide(); }
+    else if (k === '?') openGuide();
   }
 });
 

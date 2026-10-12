@@ -9,6 +9,10 @@ npm run dev      # Entwicklungsserver
 npm run build    # Typecheck + Produktionsbuild nach dist/
 ```
 
+Jeder Push auf den Standard-Branch baut die App und veröffentlicht sie über GitHub Pages
+(`.github/workflows/pages.yml`). Einmalig nötig: im Repo unter *Settings → Pages* als
+*Source* „GitHub Actions“ wählen.
+
 ## Simulation
 
 Alle Zustände liegen pro Pixel in Float-Texturen (Ping-Pong):
