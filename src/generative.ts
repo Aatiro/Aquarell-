@@ -1,11 +1,10 @@
 import { mulberry32 } from './brush';
 import { PALETTE, PigmentLatent } from './palette';
+import { shaper, toArray } from './shapes';
 
 export type GenItem =
   | { offset: number; kind: 'poly'; pts: Float32Array; color: PigmentLatent; water: number; pigment: number; seed: number }
   | { offset: number; kind: 'speed'; drySpeed: number };
-
-interface V { x: number; y: number; v: number }
 
 /**
  * Abstract watercolour after the "deformed polygon" technique: a base polygon is recursively
@@ -14,47 +13,7 @@ interface V { x: number; y: number; v: number }
  */
 export function generate(seed: number, w: number, h: number): GenItem[] {
   const rnd = mulberry32(seed);
-  const gauss = () => {
-    const u = Math.max(rnd(), 1e-9), v = rnd();
-    return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
-  };
-
-  const deform = (pts: V[], depth: number, variance: number): V[] => {
-    for (let d = 0; d < depth; d++) {
-      const out: V[] = [];
-      for (let i = 0; i < pts.length; i++) {
-        const a = pts[i], b = pts[(i + 1) % pts.length];
-        out.push(a);
-        const len = Math.hypot(b.x - a.x, b.y - a.y);
-        const t = 0.5 + gauss() * 0.08;
-        const sd = len * variance * a.v;
-        out.push({
-          x: a.x + (b.x - a.x) * t + gauss() * sd,
-          y: a.y + (b.y - a.y) * t + gauss() * sd,
-          v: (a.v + b.v) * 0.5 * (0.85 + rnd() * 0.3),
-        });
-      }
-      pts = out;
-    }
-    return pts;
-  };
-
-  const basePolygon = (cx: number, cy: number, r: number, n: number): V[] => {
-    const pts: V[] = [];
-    const rot = rnd() * Math.PI * 2;
-    const sx = 0.7 + rnd() * 0.6;
-    for (let i = 0; i < n; i++) {
-      const a = rot + (i / n) * Math.PI * 2;
-      pts.push({ x: cx + Math.cos(a) * r * sx, y: cy + Math.sin(a) * r / sx, v: 0.4 + rnd() * 0.9 });
-    }
-    return pts;
-  };
-
-  const toArray = (pts: V[]) => {
-    const a = new Float32Array(pts.length * 2);
-    pts.forEach((p, i) => { a[i * 2] = p.x; a[i * 2 + 1] = p.y; });
-    return a;
-  };
+  const { deform, basePolygon } = shaper(rnd);
 
   // colour scheme: 3-4 pigments, mostly avoiding the near-black ones as main colours
   const pool = PALETTE.map((_, i) => i).filter((i) => i !== 6 && i !== 9 && i !== 11);

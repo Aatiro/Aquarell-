@@ -1,3 +1,4 @@
+import { BlotGrower } from './blot';
 import { StampBuffer, StrokeBuilder, StrokeSettings } from './brush';
 import { generate, GenItem } from './generative';
 import type { PigmentLatent } from './palette';
@@ -38,6 +39,7 @@ export class Engine {
   private redoStack: HistEntry[] = [];
   private stamps = new StampBuffer();
   private stroke: { b: StrokeBuilder; a: number } | null = null;
+  private blot: { g: BlotGrower; a: number } | null = null;
   private gen: GenRun | null = null;
   private replay: Replay | null = null;
   private activeSteps = 0;
@@ -94,7 +96,27 @@ export class Engine {
     this.stroke = { b: new StrokeBuilder(s, this.sim.simScale), a };
   }
 
+  /** Press-and-hold blot; grows each frame until endStroke(). Layers are logged as polygons. */
+  beginBlot(s: StrokeSettings, x: number, y: number, p: number): void {
+    if (this.replay) return;
+    this.endStroke();
+    this.blot = { g: new BlotGrower(s, this.sim.simScale, x, y, p), a: this.beginAction() };
+    this.wake();
+  }
+
+  private growBlot(): void {
+    const b = this.blot!;
+    const l = b.g.next();
+    this.log.push({ step: this.sim.stepIndex, a: b.a, k: 'poly', pts: l.pts, color: b.g.s.color, water: l.water, pig: l.pigment, seed: l.seed });
+    this.sim.polygon(l.pts, b.g.s.color, l.water, l.pigment, l.seed);
+    this.wake();
+  }
+
   addPoint(x: number, y: number, p: number): void {
+    if (this.blot) {
+      this.blot.g.move(x, y, p);
+      return;
+    }
     const st = this.stroke;
     if (!st) return;
     this.log.push({ step: this.sim.stepIndex, a: st.a, k: 'pt', x, y, p });
@@ -111,6 +133,9 @@ export class Engine {
   }
 
   endStroke(): void {
+    // a quick tap still leaves a small blot
+    while (this.blot && this.blot.g.layers < 14) this.growBlot();
+    this.blot = null;
     const st = this.stroke;
     if (!st) return;
     st.b.finish(this.stamps);
@@ -306,6 +331,7 @@ export class Engine {
       return;
     }
     this.flushStroke();
+    if (this.blot) this.growBlot();
     const steps = this.gen ? Math.max(this.stepsPerFrame, 4) : this.stepsPerFrame;
     for (let i = 0; i < steps; i++) {
       if (this.gen) this.runGenerator();

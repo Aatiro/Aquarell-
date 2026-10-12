@@ -7,8 +7,12 @@ import { PaperType, ToolId, Watercolor } from './sim';
 const $ = <T extends HTMLElement = HTMLElement>(sel: string) => document.querySelector(sel) as T;
 
 // ------------------------------------------------------------------ settings
+/** 0-3 are simulation brush tools, 4 is the press-and-hold blot */
+type UiTool = ToolId | 4;
+const BLOT = 4;
+
 interface Settings {
-  tool: ToolId;
+  tool: UiTool;
   size: number;
   water: number;
   pigment: number;
@@ -120,16 +124,21 @@ canvas.addEventListener('pointerdown', (e) => {
   closeSheets();
   activePointer = e.pointerId;
   canvas.setPointerCapture(e.pointerId);
-  engine.beginStroke({
-    tool: settings.tool,
+  const stroke = {
+    tool: (settings.tool === BLOT ? 0 : settings.tool) as ToolId,
     size: settings.size,
     water: settings.water / 100,
     pigment: settings.pigment / 100,
     color,
     seed: (Math.random() * 1e9) | 0,
-  });
+  };
   const [x, y] = toSim(e);
-  engine.addPoint(x, y, pressureOf(e));
+  if (settings.tool === BLOT) {
+    engine.beginBlot(stroke, x, y, pressureOf(e));
+  } else {
+    engine.beginStroke(stroke);
+    engine.addPoint(x, y, pressureOf(e));
+  }
   e.preventDefault();
 });
 
@@ -181,12 +190,12 @@ stage.addEventListener('pointerdown', (e) => { if (e.target === stage) closeShee
 
 // ------------------------------------------------------------------ tools
 const toolButtons = [...document.querySelectorAll<HTMLButtonElement>('.tool')];
-function setTool(t: ToolId) {
+function setTool(t: UiTool) {
   settings.tool = t;
   toolButtons.forEach((b) => b.classList.toggle('on', Number(b.dataset.tool) === t));
   save();
 }
-toolButtons.forEach((b) => b.addEventListener('click', () => setTool(Number(b.dataset.tool) as ToolId)));
+toolButtons.forEach((b) => b.addEventListener('click', () => setTool(Number(b.dataset.tool) as UiTool)));
 setTool(settings.tool);
 
 // ------------------------------------------------------------------ colours
@@ -209,7 +218,7 @@ function selectColor(c: PigmentLatent, index: number) {
   paletteButtons.forEach((b, i) => b.classList.toggle('on', i === index));
   swatch.style.background = cssColor(latentToRgb(c));
   mixer.color = c;
-  if (settings.tool !== 0) setTool(0);
+  if (settings.tool !== 0 && settings.tool !== BLOT) setTool(0);
   save();
 }
 
@@ -353,6 +362,7 @@ window.addEventListener('keydown', (e) => {
     else if (k === 'w') setTool(1);
     else if (k === 's') setTool(2);
     else if (k === 'x') setTool(3);
+    else if (k === 'k') setTool(BLOT);
     else if (k === '[') setSize(Math.max(2, settings.size - 2));
     else if (k === ']') setSize(Math.min(90, settings.size + 2));
     else if (k === 'escape') { closeSheets(); closeGuide(); }
